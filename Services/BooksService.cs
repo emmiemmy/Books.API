@@ -29,8 +29,11 @@ namespace Books.API.Services
 
         public async Task<IEnumerable<Book>> GetBooksById(string id)
         {
-            //var books = from p in _context.Books select p;
-            return await _context.Books.OrderBy(b => b.Id).ToListAsync();
+            IQueryable<Book> query = _context.Books;
+            if(!string.IsNullOrEmpty(id)){
+                query = query.OrderBy(b => b.Id).Where(b => b.Id.Contains(id));
+            }
+            return await query.OrderBy(b => b.Id).ToListAsync();
         }
 
         public async Task<IEnumerable<Book>> GetBooksByAuthor(string name)
@@ -40,6 +43,16 @@ namespace Books.API.Services
                 query = query.OrderBy(b => b.Author).Where(b => b.Author.Contains(name));
             }
             query = query.OrderBy(b => b.Author);
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Book>> GetBooksByTitle(string name)
+        {
+            IQueryable<Book> query = _context.Books;
+            if(!string.IsNullOrEmpty(name)){
+                query = query.OrderBy(b => b.Title).Where(b => b.Title.Contains(name));
+            }
+            query = query.OrderBy(b => b.Title);
             return await query.ToListAsync();
         }
 

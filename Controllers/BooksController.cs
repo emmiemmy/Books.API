@@ -35,10 +35,10 @@ namespace Books.API.Controllers
 
 
         // GET: api/Books/B01
-        [HttpGet("id/{id}")]
-        public ActionResult<IEnumerable<Book>> GetBooks(string id)
+        [HttpGet("id/{id?}")]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooks(string id)
         {
-            var books =  _service.GetBooksById(id);
+            var books =  await _service.GetBooksById(id);
 
             if (books == null)
             {
@@ -48,11 +48,25 @@ namespace Books.API.Controllers
             return Ok(books);
         }
 
-        // GET: api/books/kim
+        // GET: api/books/author/kim
         [HttpGet("author/{name?}")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor(string name)
         {
             var books =  await _service.GetBooksByAuthor(name);
+
+            if (books == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(books);
+        }
+
+        // GET: api/books/title
+        [HttpGet("title/{name?}")]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByTitle(string name)
+        {
+            var books =  await _service.GetBooksByTitle(name);
 
             if (books == null)
             {
