@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,15 +22,25 @@ namespace Books.API.Services
             throw new System.NotImplementedException();
         }
 
-        public IEnumerable<Book> GetBooks()
+        public async Task<IEnumerable<Book>> GetBooks()
         {
-            return _context.Books.ToList();
+            return await _context.Books.ToListAsync();
         }
 
-        public IEnumerable<Book> GetBooksById(string id)
+        public async Task<IEnumerable<Book>> GetBooksById(string id)
         {
             //var books = from p in _context.Books select p;
-            return _context.Books.OrderBy(b => b.Id).ToList();
+            return await _context.Books.OrderBy(b => b.Id).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Book>> GetBooksByAuthor(string name)
+        {
+            IQueryable<Book> query = _context.Books;
+            if(!string.IsNullOrEmpty(name)){
+                query = query.OrderBy(b => b.Author).Where(b => b.Author.Contains(name));
+            }
+            query = query.OrderBy(b => b.Author);
+            return await query.ToListAsync();
         }
 
         public async Task<Book> AddBook(Book book)
@@ -38,6 +49,14 @@ namespace Books.API.Services
             await _context.SaveChangesAsync();
             return result.Entity;
 
+        }
+
+        public async void AddBooks(Book[] books)
+        {
+             await _context.Books.AddRangeAsync(books);
+
+            await _context.SaveChangesAsync();
+    
         }
     }
 }

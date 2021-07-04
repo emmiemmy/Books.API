@@ -23,12 +23,12 @@ namespace Books.API.Controllers
 
         // GET: api/Books
         [HttpGet]
-        public ActionResult<IEnumerable<Book>> GetBooks()
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
         {
-            var books = _service.GetBooks();
+            var books = await _service.GetBooks();
 
             if(books == null){
-                return NotFound();
+                return NotFound(books);
             }
             return Ok(books);
         }
@@ -36,9 +36,23 @@ namespace Books.API.Controllers
 
         // GET: api/Books/B01
         [HttpGet("id/{id}")]
-        public ActionResult<IEnumerable<Book>> GetBook(string id)
+        public ActionResult<IEnumerable<Book>> GetBooks(string id)
         {
             var books =  _service.GetBooksById(id);
+
+            if (books == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(books);
+        }
+
+        // GET: api/books/kim
+        [HttpGet("author/{name?}")]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor(string name)
+        {
+            var books =  await _service.GetBooksByAuthor(name);
 
             if (books == null)
             {
@@ -64,6 +78,8 @@ namespace Books.API.Controllers
             
             return CreatedAtAction("GetBook", new { id = book.Id }, book);
         }
+
+        
 /*
 
         // PUT: api/Books/5
@@ -96,30 +112,7 @@ namespace Books.API.Controllers
             return NoContent();
         }
 
-        // POST: api/Books
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Book>> PostBook(Book book)
-        {
-            _context.Books.Add(book);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (BookExists(book.Id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetBook", new { id = book.Id }, book);
-        }
+        
 
         // DELETE: api/Books/5
         [HttpDelete("{id}")]
