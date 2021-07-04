@@ -21,28 +21,30 @@ namespace Books.API.Controllers
             _service = service;
         }
 
-        // GET: api/Books
+        // GET: api/books
+        //DEPREACATED
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
         {
             var books = await _service.GetBooks();
 
-            if(books == null){
+            if (books == null)
+            {
                 return NotFound(books);
             }
             return Ok(books);
         }
 
 
-        // GET: api/Books/B01
+        // GET: api/books/id/B01
         [HttpGet("id/{id?}")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooks(string id)
         {
-            var books =  await _service.GetBooksById(id);
+            var books = await _service.GetBooksById(id);
 
             if (books == null)
             {
-                return NotFound();
+                return NotFound($"No books found by Id = {id}");
             }
 
             return Ok(books);
@@ -52,11 +54,11 @@ namespace Books.API.Controllers
         [HttpGet("author/{name?}")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor(string name)
         {
-            var books =  await _service.GetBooksByAuthor(name);
+            var books = await _service.GetBooksByAuthor(name);
 
             if (books == null)
             {
-                return NotFound();
+                return NotFound($"No books found by Author={name}");
             }
 
             return Ok(books);
@@ -66,88 +68,115 @@ namespace Books.API.Controllers
         [HttpGet("title/{name?}")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksByTitle(string name)
         {
-            var books =  await _service.GetBooksByTitle(name);
+            var books = await _service.GetBooksByTitle(name);
 
             if (books == null)
             {
-                return NotFound();
+                return NotFound($"No books found for Title = {name}");
             }
 
             return Ok(books);
         }
 
-          // POST: api/Books
-        [HttpPost]
-        public async Task<ActionResult<Book>> PostBook(Book book)
+        // GET: api/books/title
+        [HttpGet("price/{priceStr?}")]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByPrice([FromQuery] string priceStr)
         {
-            try{
-                if(book == null){
-                    return BadRequest();
-                }
-                var res = await _service.AddBook(book);
-            }catch(Exception){
-                return StatusCode(500, "Error creating book ");
+            var books = await _service.GetBooksByPrice(priceStr);
+
+            if (books == null)
+            {
+                return NotFound($"No books found for {priceStr}");
             }
-            
-            
-            return CreatedAtAction("GetBook", new { id = book.Id }, book);
+
+            return Ok(books);
         }
 
-        
-/*
-
-        // PUT: api/Books/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBook(string id, Book book)
+        // POST: api/Books
+        [HttpPost]
+        public async Task<ActionResult<Book>> PostBook([FromBody]Book book)
         {
-            if (id != book.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(book).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                if (book == null)
+                {
+                    return BadRequest();
+                }
+                var newBook = await _service.AddBook(book);
+                return CreatedAtAction(nameof(GetBookById), new { id = newBook.Id }, newBook);
+
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception)
             {
-                if (!BookExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, "Error creating book ");
             }
 
-            return NoContent();
+
         }
 
-        
+        // GET: api/books/B01
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Book>> GetBookById(string id)
+        {
+            try
+            {
+                var result = await _service.GetBookById(id);
 
-        // DELETE: api/Books/5
+                if (result == null)
+                {
+                    return NotFound($"Book with Id = {id} not found");
+                }
+                return result;
+            }
+            catch (Exception)
+            {
+                return StatusCode(500,
+                    "Error retrieving data from the database");
+            }
+        }
+
+        [HttpPut("/books/id/{id}")]
+        public async Task<ActionResult<Book>> UpdateBook(string id, [FromBody]Book book)
+        {
+            try
+            {
+                if (id != book.Id)
+                    return BadRequest("Book ID mismatch");
+
+                var bookToUpdate = await _service.GetBookById(id);
+
+                if (bookToUpdate == null)
+                    return NotFound($"Book with Id = {id} not found");
+
+                return await _service.UpdateBook(book);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500,
+                    "Error updating data");
+            }
+        }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(string id)
+    public async Task<ActionResult<Book>> DeleteBook(string id)
+    {
+        try
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
+            var bookToDelete = await _service.GetBookById(id);
+
+            if (bookToDelete == null)
             {
-                return NotFound();
+                return NotFound($"Book with Id = {id} not found");
             }
 
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return await _service.DeleteBook(id);
         }
-
-        private bool BookExists(string id)
+        catch (Exception)
         {
-            return _context.Books.Any(e => e.Id == id);
+            return StatusCode(500,
+                "Error deleting data");
         }
-    */
+    }
+        
     }
 }

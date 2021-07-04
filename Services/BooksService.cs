@@ -17,14 +17,16 @@ namespace Books.API.Services
             _context = context;
         }
 
-        public Book GetBookById(string id)
-        {
-            throw new System.NotImplementedException();
-        }
 
         public async Task<IEnumerable<Book>> GetBooks()
         {
             return await _context.Books.ToListAsync();
+        }
+
+        public async Task<Book> GetBookById(string id)
+        {
+            IQueryable<Book> query = _context.Books;
+                return await query.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<IEnumerable<Book>> GetBooksById(string id)
@@ -56,6 +58,15 @@ namespace Books.API.Services
             return await query.ToListAsync();
         }
 
+        public async Task<IEnumerable<Book>> GetBooksByPrice(string priceStr)
+        {
+            IQueryable<Book> query = _context.Books;
+            if(!string.IsNullOrEmpty(priceStr)){
+
+            }
+            return await query.ToListAsync();
+        }
+
         public async Task<Book> AddBook(Book book)
         {
             var result = await _context.Books.AddAsync(book);
@@ -64,12 +75,47 @@ namespace Books.API.Services
 
         }
 
+        //TODO
         public async void AddBooks(Book[] books)
         {
              await _context.Books.AddRangeAsync(books);
 
             await _context.SaveChangesAsync();
     
+        }
+
+        public async Task<Book> UpdateBook(Book book)
+        {
+            var result = await _context.Books.FirstOrDefaultAsync(b => b.Id == book.Id);
+
+            if(result != null)
+            {
+                result.Author = book.Author;
+                result.Title = book.Title;
+                result.PublishedDate = book.PublishedDate;
+                result.Price = book.Price;
+                result.Description = book.Description;
+                result.Genre = book.Genre;
+
+                await _context.SaveChangesAsync();
+
+                return result;
+            }
+            return null;
+            
+
+        }
+
+        public async Task<Book> DeleteBook(string id)
+        {
+            var result = await _context.Books
+                .FirstOrDefaultAsync(b => b.Id == id);
+            if (result != null)
+            {
+                _context.Books.Remove(result);
+                await _context.SaveChangesAsync();
+            }
+            return null;
         }
     }
 }
