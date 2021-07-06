@@ -7,13 +7,18 @@ namespace Books.API.Services
 {
     public interface IBooksService
     {
-        IEnumerable<Book> GetBooks();
+        Task<IEnumerable<Book>> GetBooks();
 
-        Book GetBookById(string id);
+        Task<Book> GetBookById(string id);
 
-        IEnumerable<Book> GetBooksById(string id);
-
-        
+        Task<IEnumerable<Book>> GetBooksById(string id);
+        Task<IEnumerable<Book>> GetBooksByAuthor(string name);
+        Task<IEnumerable<Book>> GetBooksByTitle(string name);
+        Task<IEnumerable<Book>> GetBooksByPrice(string priceStr);
+        Task<Book> AddBook(Book book);
+        void AddBooks(Book[] books);
+        Task<Book> UpdateBook(Book book);
+        Task<Book> DeleteBook(string id);
 
 
     }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Books.API.Services
 {
-    public class BooksService
+    public class BooksService : IBooksService
     {
         private BooksContext _context;
 
@@ -114,6 +114,7 @@ namespace Books.API.Services
             {
                 _context.Books.Remove(result);
                 await _context.SaveChangesAsync();
+                return result;
             }
             return null;
         }

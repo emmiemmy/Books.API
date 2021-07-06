@@ -28,7 +28,7 @@ namespace Books.API
 
             services.AddControllers();
 
-            services.AddScoped<BooksService, BooksService>();
+            services.AddScoped<IBooksService, BooksService>();
 
 
         }

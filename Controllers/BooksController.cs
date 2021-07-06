@@ -14,9 +14,9 @@ namespace Books.API.Controllers
     [ApiController]
     public class BooksController : Controller
     {
-        private readonly BooksService _service;
+        private readonly IBooksService _service;
 
-        public BooksController(BooksService service)
+        public BooksController(IBooksService service)
         {
             _service = service;
         }
@@ -94,7 +94,7 @@ namespace Books.API.Controllers
 
         // POST: api/Books
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBook([FromBody]Book book)
+        public async Task<ActionResult<Book>> PostBook([FromBody] Book book)
         {
             try
             {
@@ -135,8 +135,9 @@ namespace Books.API.Controllers
             }
         }
 
-        [HttpPut("/books/id/{id}")]
-        public async Task<ActionResult<Book>> UpdateBook(string id, [FromBody]Book book)
+        //PUT: api/books/B13
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Book>> UpdateBook(string id, [FromBody] Book book)
         {
             try
             {
@@ -158,25 +159,25 @@ namespace Books.API.Controllers
         }
 
         [HttpDelete("{id}")]
-    public async Task<ActionResult<Book>> DeleteBook(string id)
-    {
-        try
+        public async Task<ActionResult<Book>> DeleteBook(string id)
         {
-            var bookToDelete = await _service.GetBookById(id);
-
-            if (bookToDelete == null)
+            try
             {
-                return NotFound($"Book with Id = {id} not found");
-            }
+                var bookToDelete = await _service.GetBookById(id);
 
-            return await _service.DeleteBook(id);
+                if (bookToDelete == null)
+                {
+                    return NotFound($"Book with Id = {id} not found");
+                }
+
+                return await _service.DeleteBook(id);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500,
+                    "Error deleting data");
+            }
         }
-        catch (Exception)
-        {
-            return StatusCode(500,
-                "Error deleting data");
-        }
-    }
-        
+
     }
 }
